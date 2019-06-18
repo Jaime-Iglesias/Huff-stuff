@@ -1,0 +1,55 @@
+#define macro SQRT16 = takes(1) returns(1) {
+    0x0
+    0x1 0xfe shl         //0xfe for 256 bits ,0x7c for 128bit, 0xe for 16 bit....
+
+    //[bit, res, num]
+
+    cond1 jump
+
+    do1: // { bit =>> 2 }
+
+        0x2 shr     
+                            //[(bit =>> 2), res, num]
+    cond1: // while bit > num
+
+        dup3 dup2 gt                    //[(bit > num ?), bit, res, num]
+        do1 jumpi
+        cond2 jump
+
+    do2:   //(num < bit + res) ?
+
+        dup1 dup3 add               //[(res + bit), bit, res, num ] 
+        dup4 lt                     //[(num < (res + bit)?), bit, res, num]
+        do4 jumpi
+
+        do3:    //lt = false
+
+            // num = num - res + bit
+            swap2 dup2 dup4 add
+            swap1 sub               //[(num - (res + bit)), res, bit]
+
+            // res = (res >> 1) + b
+            swap1 0x1 shr           //[(res >> 1), num, bit]
+            dup3 add                //[((res >> 1) + b), num, bit]
+            swap1 swap2
+            do5 jump      
+
+        do4:    //lt = true
+
+            swap1
+            0x1 shr                 //[(res =>> 1), bit, num]
+            swap1                   //[bit, (res =>> 1), num]
+
+    do5:    // bit =>> 2
+
+        0x2 shr           //[(bit >> 2), res, num]
+
+    cond2:
+
+        dup1 do2 jumpi                  //[ bit, res, num]
+        pop swap1 pop
+}
+
+#define macro MAIN = takes(0) returns (1) {
+    0x085848cf40147c9142eb4270aacb0cce9c97df3d3cd9b9c40870f3527272fe64 SQRT16()
+}
